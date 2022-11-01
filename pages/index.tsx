@@ -1,9 +1,15 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import type { NextPage } from 'next';
-import Head from 'next/head';
-import styles from '../styles/Home.module.css';
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import type { GetServerSideProps, NextPage } from "next";
+import Head from "next/head";
+import { useAccount } from "wagmi";
+import Interface from "../components/Interface";
+import styles from "../styles/Home.module.css";
+export type Props = {
+  ethPrice: number;
+}
+const Home = (props: Props) => {
+  const { isConnected } = useAccount();
 
-const Home: NextPage = () => {
   return (
     <div className={styles.container}>
       <Head>
@@ -15,62 +21,10 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className={styles.main}>
+      <div className={styles.main}>
         <ConnectButton />
-
-        <h1 className={styles.title}>
-          Welcome to <a href="">RainbowKit</a> + <a href="">wagmi</a> +{' '}
-          <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.tsx</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://rainbowkit.com" className={styles.card}>
-            <h2>RainbowKit Documentation &rarr;</h2>
-            <p>Learn how to customize your wallet connection flow.</p>
-          </a>
-
-          <a href="https://wagmi.sh" className={styles.card}>
-            <h2>wagmi Documentation &rarr;</h2>
-            <p>Learn how to interact with Ethereum.</p>
-          </a>
-
-          <a
-            href="https://github.com/rainbow-me/rainbowkit/tree/main/examples"
-            className={styles.card}
-          >
-            <h2>RainbowKit Examples &rarr;</h2>
-            <p>Discover boilerplate example RainbowKit projects.</p>
-          </a>
-
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Next.js Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Next.js Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+        {isConnected && <Interface ethPrice={props.ethPrice} />}
+      </div>
 
       <footer className={styles.footer}>
         <a href="https://rainbow.me" target="_blank" rel="noopener noreferrer">
@@ -80,5 +34,15 @@ const Home: NextPage = () => {
     </div>
   );
 };
-
+export const getServerSideProps: GetServerSideProps = async () => {
+  const response = await fetch(
+    "http://api.coingecko.com/api/v3/coins/ethereum"
+  );
+  const ethPrice = await response.json();
+  return {
+    props: {
+      ethPrice: ethPrice.market_data.current_price.usd,
+    },
+  };
+};
 export default Home;
