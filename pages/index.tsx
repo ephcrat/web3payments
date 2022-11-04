@@ -27,7 +27,7 @@ const Home = (props: Props) => {
       </div>
 
       <footer className={styles.footer}>
-        <p>Made with ❤️ by Alejandro Hernandez</p>
+        <p>Made with ❤️ by Alejandro Hernández</p>
         <a
           href="https://github.com/ephcrat/web3payments"
           target="_blank"
