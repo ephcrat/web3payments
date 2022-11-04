@@ -1,17 +1,12 @@
 import "../styles/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import type { AppProps } from "next/app";
-import {
-  RainbowKitProvider,
-  getDefaultWallets,
-  lightTheme,
-  darkTheme,
-} from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
 import { chain, configureChains, createClient, WagmiConfig } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
-import { publicProvider } from "wagmi/providers/public";
 import { ChakraProvider } from "@chakra-ui/react";
-console.log(chain.goerli);
+import { theme } from "../theme";
+
 const { chains, provider, webSocketProvider } = configureChains(
   [chain.goerli, chain.polygonMumbai],
   [
@@ -36,7 +31,7 @@ const wagmiClient = createClient({
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <WagmiConfig client={wagmiClient}>
         <RainbowKitProvider
           chains={chains}

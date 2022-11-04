@@ -1,18 +1,41 @@
 import { Box, Button, Flex, FormControl, Input, Text } from "@chakra-ui/react";
-import { parseEther } from "ethers/lib/utils";
-import React from "react";
+
+import { parseEther, parseUnits } from "ethers/lib/utils";
+import { StaticImageData } from "next/image";
+import { useState } from "react";
+
 import {
-  useAccount,
+  erc20ABI,
+  useContractWrite,
+  usePrepareContractWrite,
   usePrepareSendTransaction,
   useSendTransaction,
   useWaitForTransaction,
 } from "wagmi";
-import { Props } from "../pages";
 
+import { Props } from "../pages";
+import { TokenOptions, tokenOptions } from "../utils";
+import TokenSelect from "./TokenSelect";
 const Interface = ({ ethPrice }: Props) => {
+  const [selectedToken, setSelectedToken] = useState(tokenOptions[0]);
   const address = "0xc839b7c702C88e88dd31a29A942fB0dB59a00B06";
   const subAmount = "5";
   const priceInEth = (Number(subAmount) / ethPrice).toFixed(6).toString();
+
+  const handleTokenChange = (value: TokenOptions) => {
+    setSelectedToken(value); //change selected token
+  };
+
+  //Pay with custom token (USDC) https://wagmi.sh/docs/hooks/useContractWrite
+  const { config: configWrite } = usePrepareContractWrite({
+    address: selectedToken.value, //Goerli USDC contract address
+    abi: erc20ABI, //Standard ERC-20 ABI https://www.quicknode.com/guides/smart-contract-development/what-is-an-abi
+    functionName: "transfer", //We're going to use the tranfer method provided in the ABI, here's an example of a standard transfer method https://docs.ethers.io/v5/single-page/#/v5/api/contract/example/
+    args: [address, parseUnits(subAmount, 6)], //[receiver, amount]
+  });
+  const { data: dataWrite, write } = useContractWrite(configWrite);
+
+  //Pay with ether https://wagmi.sh/docs/hooks/useSendTransaction
   const { config } = usePrepareSendTransaction({
     request: {
       to: address,
@@ -24,17 +47,17 @@ const Interface = ({ ethPrice }: Props) => {
 
   //Wait for payment (ether or custom) to be completed
   const { isLoading, isSuccess } = useWaitForTransaction({
-    hash: data?.hash, //transaction hash
+    hash: data?.hash || dataWrite?.hash, //transaction hash
   });
 
   return (
     <Box
-      w="26rem"
+      w="30rem"
       mx="auto"
       mt="1.25rem"
       boxShadow="rgb(0 0 0 / 8%) 0rem 0.37rem 0.62rem"
       borderRadius="1.37rem"
-      bg="#D1DFE3"
+      bg="#ffffff"
       pb={5}
       pl={1}
     >
@@ -55,7 +78,7 @@ const Interface = ({ ethPrice }: Props) => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                sendTransaction?.();
+                selectedToken.value ? write?.() : sendTransaction?.();
               }}
             >
               <FormControl>
@@ -69,10 +92,12 @@ const Interface = ({ ethPrice }: Props) => {
                   border="0.06rem solid rgb(237, 238, 242)"
                   _hover={{ border: "0.06rem solid rgb(211,211,211)" }}
                 >
+                  <Text color="black">To:</Text>
                   <Input
                     color="black"
                     aria-label="Recipient"
                     value={address}
+                    fontSize="1.1rem"
                     fontWeight="500"
                     width="100%"
                     size="1rem"
@@ -102,26 +127,38 @@ const Interface = ({ ethPrice }: Props) => {
                     border="none"
                     focusBorderColor="none"
                     color="black"
-                    aria-label="Amount (ether)"
-                    value={priceInEth}
+                    aria-label="Amount"
+                    value={selectedToken.value ? subAmount : priceInEth}
                   />
                   <Box
                     w={215}
                     boxShadow="rgb(0 0 0 / 8%) 0rem 0.37rem 0.62rem"
                     borderRadius="1.37rem"
-                    bg="#D1DFE3"
-                  ></Box>
+                    bg="#bca7ca"
+                  >
+                    <TokenSelect
+                      selectedToken={selectedToken}
+                      tokenOptions={tokenOptions}
+                      handleTokenChange={handleTokenChange}
+                    />
+                  </Box>
                 </Flex>
-                <Box mt="0.5rem">
+                <Box mt="0.5rem" padding={1} maxH="3rem">
                   <Button
                     disabled={isLoading || isSuccess}
                     type={"submit"}
                     color="white"
-                    bg="rgb(255,140,0)"
+                    bg="#bca7ca"
                     width="100%"
                     p="1.62rem"
                     borderRadius="1.25rem"
-                    _hover={{ bg: "rgb(255,165,0)" }}
+                    _hover={{
+                      bg: "white",
+                      color: "#bca7ca",
+                      border: "2px",
+                      borderColor: "#bca7ca",
+                    }}
+                    fontSize="1.5rem"
                   >
                     {isLoading ? "Sending Payment..." : "Send Payment"}
                   </Button>
@@ -132,7 +169,8 @@ const Interface = ({ ethPrice }: Props) => {
         </Flex>
         {isSuccess && (
           <Flex color="black" mt={7} mb={7} textAlign="center">
-            Successfully paid {priceInEth} ETH to {address}
+            Successfully paid {selectedToken.value ? subAmount : priceInEth}{" "}
+            {selectedToken.label} to {address}
           </Flex>
         )}
       </Box>
