@@ -5,7 +5,6 @@
 .main {
   min-height: 100vh;
   padding: 4rem 0;
-  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -13,22 +12,26 @@
 }
 
 .footer {
+  position: relative;
   display: flex;
-  flex: 1;
   padding: 2rem 0;
   border-top: 1px solid #eaeaea;
+  color: black;
   justify-content: center;
   align-items: center;
-  color: black;
 }
 
 .footer a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 1;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 
+.footer p {
+  display: flex;
+}
 .title a {
   color: #0d76fc;
   text-decoration: none;

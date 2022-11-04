@@ -4,6 +4,7 @@ import Head from "next/head";
 import { useAccount } from "wagmi";
 import Interface from "../components/Interface";
 import styles from "../styles/Home.module.css";
+import { FaGithub } from "react-icons/fa";
 export type Props = {
   ethPrice: number;
 };
@@ -26,12 +27,13 @@ const Home = (props: Props) => {
       </div>
 
       <footer className={styles.footer}>
+        <p>Made with ❤️ by Alejandro Hernandez</p>
         <a
-          href="https://github.com/ephcrat"
+          href="https://github.com/ephcrat/web3payments"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Made with ❤️ by Alejandro Hernandez
+          <FaGithub />
         </a>
       </footer>
     </div>
