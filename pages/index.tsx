@@ -1,5 +1,5 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import type { GetServerSideProps, NextPage } from "next";
+import type { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useAccount } from "wagmi";
 import Interface from "../components/Interface";
@@ -43,7 +43,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const response = await fetch(
     "http://api.coingecko.com/api/v3/coins/ethereum"
   );
-  const ethPrice = await response.json();
+  const ethPrice = await response.json()
   return {
     props: {
       ethPrice: ethPrice.market_data.current_price.usd,

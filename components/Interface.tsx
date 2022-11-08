@@ -1,9 +1,6 @@
 import { Box, Button, Flex, FormControl, Input, Text } from "@chakra-ui/react";
-
 import { parseEther, parseUnits } from "ethers/lib/utils";
-import { StaticImageData } from "next/image";
 import { useState } from "react";
-
 import {
   erc20ABI,
   useContractWrite,
@@ -12,15 +9,16 @@ import {
   useSendTransaction,
   useWaitForTransaction,
 } from "wagmi";
-
 import { Props } from "../pages";
 import { TokenOptions, tokenOptions } from "../utils";
 import TokenSelect from "./TokenSelect";
+
 const Interface = ({ ethPrice }: Props) => {
   const [selectedToken, setSelectedToken] = useState(tokenOptions[0]);
-  const address = "0xc839b7c702C88e88dd31a29A942fB0dB59a00B06";
-  const subAmount = "5";
-  const priceInEth = (Number(subAmount) / ethPrice).toFixed(6).toString();
+  const address = "0xc839b7c702C88e88dd31a29A942fB0dB59a00B06"; //wallet address that will receive the funds
+  const subAmount = "5"; //amount to be paid in USD, here we're simulating it's for a subscription and hardcoding it but you can bring it from props.
+
+  const priceInEth = (Number(subAmount) / ethPrice).toFixed(6).toString(); //converting the amount in USD to ETH
 
   const handleTokenChange = (value: TokenOptions) => {
     setSelectedToken(value); //change selected token
@@ -31,21 +29,22 @@ const Interface = ({ ethPrice }: Props) => {
     address: selectedToken.value, //Goerli USDC contract address
     abi: erc20ABI, //Standard ERC-20 ABI https://www.quicknode.com/guides/smart-contract-development/what-is-an-abi
     functionName: "transfer", //We're going to use the tranfer method provided in the ABI, here's an example of a standard transfer method https://docs.ethers.io/v5/single-page/#/v5/api/contract/example/
-    args: [address, parseUnits(subAmount, 6)], //[receiver, amount]
+    args: [address, parseUnits(subAmount, 6)], //[receiver, amount] Note that the units to parse are six because that's the number of decimals set for USDC in its contract. In order to add another token with a different amount of decimals its necessary to add additional logic here for it to work.
   });
   const { data: dataWrite, write } = useContractWrite(configWrite);
 
-  //Pay with ether https://wagmi.sh/docs/hooks/useSendTransaction
+  //Pay with ether https://wagmi.sh/docs/prepare-hooks/usePrepareSendTransaction
   const { config } = usePrepareSendTransaction({
     request: {
       to: address,
-      value: parseEther(priceInEth),
+      value: parseEther(priceInEth), // parse the ETH amount to make it readable for the Ethereum Virtual Machine --- https://docs.ethers.io/v4/api-utils.html
     },
   });
 
+  //https://wagmi.sh/docs/hooks/useSendTransaction
   const { data, sendTransaction } = useSendTransaction(config);
 
-  //Wait for payment (ether or custom) to be completed
+  //Wait for payment to be completed https://wagmi.sh/docs/hooks/useWaitForTransaction
   const { isLoading, isSuccess } = useWaitForTransaction({
     hash: data?.hash || dataWrite?.hash, //transaction hash
   });

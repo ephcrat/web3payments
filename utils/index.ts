@@ -9,7 +9,7 @@ export type TokenOptions = {
 export const tokenOptions: TokenOptions[] = [
   { value: undefined, label: "ETH", icon: EthIcon },
   {
-    value: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
+    value: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F", //Görli USDC Smart Contracts address
     label: "USDC",
     icon: UsdcIcon,
   },
